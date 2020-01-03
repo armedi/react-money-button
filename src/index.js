@@ -5,6 +5,7 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
 import config from './util/config'
+import styles from './styles.module.css'
 
 const MONEY_BUTTON_JS_URL = config.get('MONEY_BUTTON_IFRAME_LOADER_URI')
 
@@ -31,7 +32,7 @@ class AsyncIframeLoader {
   }
 }
 
-export default class MoneyButton extends Component {
+class MoneyButton extends Component {
   static propTypes = {
     to: PropTypes.string,
     amount: PropTypes.string,
@@ -110,6 +111,39 @@ export default class MoneyButton extends Component {
   render () {
     return (
       <div ref={this.setRef} />
+    )
+  }
+}
+
+export default class MoneyButtonWithLoading extends Component {
+  static propTypes = MoneyButton.propTypes
+
+  constructor (props) {
+    super(props)
+    this.state = { buttonHasRendered: false }
+    this.onLoad = this.onLoad.bind(this)
+  }
+
+  onLoad () {
+    typeof this.props.onLoad === 'function' && this.props.onLoad()
+    this.setState({ buttonHasRendered: true })
+  }
+
+  render () {
+    return (
+      <div style={{width: '280px', height: '50px'}}>
+        <div style={{ display: this.state.buttonHasRendered ? 'initial' : 'none' }}>
+          <MoneyButton {...this.props} onLoad={this.onLoad} />
+        </div>
+        {!this.state.buttonHasRendered && (
+          <div className={styles['loading-outer']}>
+            <div className={styles['loading-inner']}>
+              <span className={styles['loading-pulse']} />
+              <p>loading...</p>
+            </div>
+          </div>
+        )}
+      </div>
     )
   }
 }
